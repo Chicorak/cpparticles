@@ -33,7 +33,7 @@ int main() {
 	std::mt19937 engine(rd());
 	std::uniform_int_distribution<int> massDist(1,5);
 	
-	// Add randomized particles to the environment.
+	// Add randomized Joint to the environment.
 	for (int i = 0; i < 500; i++) {
 		int mass = massDist(rd);
 		float size = 0.5 * pow(mass, 0.5);
@@ -121,21 +121,21 @@ int main() {
 			env->update();
 		}
 		
-		for (int i = 0; i < env->getParticles().size(); i++) {
-			Particle *particle = env->getParticles()[i];
+		for (int i = 0; i < env->getJoint().size(); i++) {
+			Particle *particle = env->getJoint()[i];
 			
-			// Combine colliding particles.
+			// Combine colliding Joint.
 			if (particle->getCollideWith()) {
 				env->removeParticle(particle->getCollideWith());
 				particle->setSize(0.5 * pow(particle->getMass(), 0.5));
 			}
 			
-			// Update view window by changing the position and size of the drawn particles.
+			// Update view window by changing the position and size of the drawn Joint.
 			float x = mx + (dx + particle->getX()) * magnification;
 			float y = my + (dy + particle->getY()) * magnification;
 			float size = particle->getSize() * magnification;
 			
-			// Draw particles.
+			// Draw Joint.
 			sf::CircleShape circle(size);
 			circle.setOrigin(size, size);
 			circle.setPosition(x, y);

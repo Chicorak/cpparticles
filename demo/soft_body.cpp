@@ -12,7 +12,7 @@ int main() {
 	sf::RenderWindow window(sf::VideoMode(env->getWidth(), env->getHeight()), "Soft Body Simulation");
 	window.setFramerateLimit(60);
 	
-	// Add particles for the soft body to the environment.
+	// Add Joint for the soft body to the environment.
 	int size = 10;
 	int mass = 600;
 	int speed = 0;
@@ -24,7 +24,7 @@ int main() {
 	Particle *p3 = env->addParticle(500, 500, size, mass, speed, angle, elasticity);
 	Particle *p4 = env->addParticle(300, 500, size, mass, speed, angle, elasticity);
 	
-	// Connect particles using springs to create the soft body.
+	// Connect Joint using springs to create the soft body.
 	int length = 200;
 	int strength = 50;
 	

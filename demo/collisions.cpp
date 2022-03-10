@@ -1,4 +1,4 @@
-// Demonstrates particle physics in a 'regular' environment with gravity.
+// Demonstrates Joint physics in a 'regular' environment with gravity.
 #include <SFML/Graphics.hpp>
 #include "../include/cpparticles.hpp"
 
@@ -6,15 +6,15 @@ int main() {
 	
 	// Set up the environment.
 	Environment *env = new Environment(800, 600);
-	Particle *selectedParticle = nullptr;
+	Joint *selectedJoint = nullptr;
 	
 	// Create the main window.
 	sf::RenderWindow window(sf::VideoMode(env->getWidth(), env->getHeight()), "Collision Simulation");
 	window.setFramerateLimit(60);
 	
-	// Add random particles to the environment.
+	// Add random Joints to the environment.
 	for (int i = 0; i < 10; i++) {
-		env->addParticle();
+		env->addJoint();
 	}
 	
 	while (window.isOpen()) {
@@ -35,19 +35,19 @@ int main() {
 				}
 			}
 			
-			// Hold left mouse button: Select and drag a particle.
+			// Hold left mouse button: Select and drag a Joint.
 			if (event.type == sf::Event::MouseButtonPressed) {
 				if (event.mouseButton.button == sf::Mouse::Left) {
 					float mouseX = event.mouseButton.x;
 					float mouseY = event.mouseButton.y;
-					selectedParticle = env->getParticle(mouseX, mouseY);
+					selectedJoint = env->getJoint(mouseX, mouseY);
 				}
 			}
 			
-			// Release left mouse button: Release a particle.
+			// Release left mouse button: Release a Joint.
 			if (event.type == sf::Event::MouseButtonReleased) {
 				if (event.mouseButton.button == sf::Mouse::Left) {
-					selectedParticle = nullptr;
+					selectedJoint = nullptr;
 				}
 			}
 		}
@@ -58,19 +58,19 @@ int main() {
 		// Update the environment.
 		env->update();
 		
-		// Move the selected particle to the cursor's position.
-		if (selectedParticle) {
+		// Move the selected Joint to the cursor's position.
+		if (selectedJoint) {
 			float mouseX = sf::Mouse::getPosition(window).x;
 			float mouseY = sf::Mouse::getPosition(window).y;
-			selectedParticle->moveTo(mouseX, mouseY);
+			selectedJoint->moveTo(mouseX, mouseY);
 		}
 		
-		// Draw particles.
-		for (int i = 0; i < env->getParticles().size(); i++) {
-			Particle *particle = env->getParticles()[i];
-			sf::CircleShape circle(particle->getSize());
-			circle.setOrigin(particle->getSize(), particle->getSize());
-			circle.setPosition(particle->getX(), particle->getY());
+		// Draw Joints.
+		for (int i = 0; i < env->getJoints().size(); i++) {
+			Joint *Joint = env->getJoints()[i];
+			sf::CircleShape circle(Joint->getSize());
+			circle.setOrigin(Joint->getSize(), Joint->getSize());
+			circle.setPosition(Joint->getX(), Joint->getY());
 			window.draw(circle);
 		}
 		

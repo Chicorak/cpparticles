@@ -1,6 +1,6 @@
 // Contains member functions of the Spring class.
 // Handles the movement and forces acting upon the spring.
-#include "../include/spring.hpp"
+#include "../include/Spring.hpp"
 
 
 // Spring constructor.

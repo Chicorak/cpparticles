@@ -5,25 +5,25 @@
 
 #include <math.h>
 #include <random>
-#include "particle.hpp"
-#include "spring.hpp"
+#include "Joint.hpp"
+#include "Spring.hpp"
 
 
-// Handles all interaction between particles, springs and attributes within the environment.
+// Handles all interaction between Joints, springs and attributes within the environment.
 class Environment {
 public:
 	Environment(int width, int height);
 	~Environment();
 	int getHeight() { return height; }
 	int getWidth() { return width; }
-	Particle * addParticle();
-	Particle * addParticle(float x, float y, float size=10, float mass=100, float speed=0, float angle=0, float elasticity=0.9);
-	Particle * getParticle(float x, float y);
-	Spring * addSpring(Particle *p1, Particle *p2, float length=50, float strength=0.5);
-	std::vector<Particle* > getParticles() { return particles; }
+	Joint * addJoint();
+	Joint * addJoint(float x, float y, float size=10, float mass=100, float speed=0, float angle=0, float elasticity=0.9);
+	Joint * getJoint(float x, float y);
+	Spring * addSpring(Joint *p1, Joint *p2, float length=50, float strength=0.5);
+	std::vector<Joint* > getJoints() { return Joints; }
 	std::vector<Spring* > getSprings() { return springs; }
-	void bounce(Particle *particle);
-	void removeParticle(Particle *particle);
+	void bounce(Joint *Joint);
+	void removeJoint(Joint *Joint);
 	void removeSpring(Spring *spring);
 	void setAirMass(float a) { airMass = a; }
 	void setAllowAccelerate(bool setting) { allowAccelerate = setting; }
@@ -48,7 +48,7 @@ protected:
 	bool allowMove = true;
 	float airMass = 0.2;
 	float elasticity = 0.75;
-	std::vector<Particle *> particles;
+	std::vector<Joint *> Joints;
 	std::vector<Spring *> springs;
 	Vector acceleration = {M_PI, 0.2};
 };

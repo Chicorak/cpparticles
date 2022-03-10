@@ -1,5 +1,5 @@
 // Contains member functions of the Environment class.
-// Handles all interaction between particles, springs and attributes within the environment.
+// Handles all interaction between Joints, springs and attributes within the environment.
 #include "../include/environment.hpp"
 
 
@@ -9,19 +9,19 @@ width(width), height(height) {
 }
 
 
-// Environment destructor. Destroys all particles and springs in the environment.
+// Environment destructor. Destroys all Joints and springs in the environment.
 Environment::~Environment() {
 	for (int i = 0; i < springs.size(); i++) {
 		delete springs[i];
 	}
-	for (int i = 0; i < particles.size(); i++) {
-		delete particles[i];
+	for (int i = 0; i < Joints.size(); i++) {
+		delete Joints[i];
 	}
 }
 
 
-// Adds a particle with randomly generated attributes to the environment and returns a pointer to the particle.
-Particle * Environment::addParticle() {
+// Adds a Joint with randomly generated attributes to the environment and returns a pointer to the Joint.
+Joint * Environment::addJoint() {
 	std::random_device rd;
 	std::mt19937 engine(rd());
 	std::uniform_int_distribution<int> sizeDist(10,20);
@@ -38,72 +38,72 @@ Particle * Environment::addParticle() {
 	float angle = angleDist(rd);
 	std::uniform_real_distribution<float> elasticityDist (0.8, 1);
 	float elasticity = elasticityDist(rd);
-	return addParticle(x, y, size, mass, speed, angle, elasticity);
+	return addJoint(x, y, size, mass, speed, angle, elasticity);
 }
 
 
-// Adds a particle with parameter-specified attributes to the environment and returns a pointer to the particle.
-Particle * Environment::addParticle(float x, float y, float size, float mass, float speed, float angle, float elasticity) {
+// Adds a Joint with parameter-specified attributes to the environment and returns a pointer to the Joint.
+Joint * Environment::addJoint(float x, float y, float size, float mass, float speed, float angle, float elasticity) {
 	// Equation for drag [source]: http://www.petercollingridge.co.uk/tutorials/pygame-physics-simulation/mass/
 	float drag = pow((mass / (mass + airMass)), size);
-	Particle *particle = new Particle(x, y, size, mass, speed, angle, elasticity, drag);
-	particles.push_back(particle);
-	return particle;
+	Joint *johnt = new Joint(x, y, size, mass, speed, angle, elasticity, drag);
+	Joints.push_back(johnt);
+	return johnt;
 }
 
 
-// Returns a pointer to the particle from the environment at the coordinates (x, y), otherwise nullptr.
-Particle * Environment::getParticle(float x, float y){
-	for (int i = 0; i < particles.size(); i++) {
-		if (hypot(particles[i]->getX() - x, particles[i]->getY() - y) <= particles[i]->getSize()) {
-			return particles[i];
+// Returns a pointer to the Joint from the environment at the coordinates (x, y), otherwise nullptr.
+Joint * Environment::getJoint(float x, float y){
+	for (int i = 0; i < Joints.size(); i++) {
+		if (hypot(Joints[i]->getX() - x, Joints[i]->getY() - y) <= Joints[i]->getSize()) {
+			return Joints[i];
 		}
 	}
 	return nullptr;
 }
 
 
-// Adds a spring connecting two particles in the environment and returns a pointer to the spring.
-Spring * Environment::addSpring(Particle *p1, Particle *p2, float length, float strength) {
+// Adds a spring connecting two Joints in the environment and returns a pointer to the spring.
+Spring * Environment::addSpring(Joint *p1, Joint *p2, float length, float strength) {
 	Spring *spring = new Spring(p1, p2, length, strength);
 	springs.push_back(spring);
 	return spring;
 }
 
 
-// Bounces a particle if in contact with boundary of the environment.
-void Environment::bounce(Particle *particle) {
-	// Particle hits the right boundary:
-	if (particle->getX() > (width - particle->getSize())) {
-		particle->setX(2 * (width - particle->getSize()) - particle->getX());
-		particle->setAngle(-particle->getAngle());
-		particle->setSpeed(particle->getSpeed() * particle->getElasticity());
-	// Particle hits the left boundary:
-	} else if (particle->getX() < particle->getSize()) {
-		particle->setX(2 * particle->getSize() - particle->getX());
-		particle->setAngle(-particle->getAngle());
-		particle->setSpeed(particle->getSpeed() * particle->getElasticity());
+// Bounces a Joint if in contact with boundary of the environment.
+void Environment::bounce(Joint *Joint) {
+	// Joint hits the right boundary:
+	if (Joint->getX() > (width - Joint->getSize())) {
+		Joint->setX(2 * (width - Joint->getSize()) - Joint->getX());
+		Joint->setAngle(-Joint->getAngle());
+		Joint->setSpeed(Joint->getSpeed() * Joint->getElasticity());
+	// Joint hits the left boundary:
+	} else if (Joint->getX() < Joint->getSize()) {
+		Joint->setX(2 * Joint->getSize() - Joint->getX());
+		Joint->setAngle(-Joint->getAngle());
+		Joint->setSpeed(Joint->getSpeed() * Joint->getElasticity());
 	}
-	// Particle hits the bottom boundary:
-	if (particle->getY() > (height - particle->getSize())) {
-		particle->setY(2 * (height - particle->getSize()) - particle->getY());
-		particle->setAngle(M_PI - particle->getAngle());
-		particle->setSpeed(particle->getSpeed() * particle->getElasticity());
-	// Particle hits the top boundary:
-	} else if (particle->getY() < particle->getSize()) {
-		particle->setY(2 * particle->getSize() - particle->getY());
-		particle->setAngle(M_PI - particle->getAngle());
-		particle->setSpeed(particle->getSpeed() * particle->getElasticity());
+	// Joint hits the bottom boundary:
+	if (Joint->getY() > (height - Joint->getSize())) {
+		Joint->setY(2 * (height - Joint->getSize()) - Joint->getY());
+		Joint->setAngle(M_PI - Joint->getAngle());
+		Joint->setSpeed(Joint->getSpeed() * Joint->getElasticity());
+	// Joint hits the top boundary:
+	} else if (Joint->getY() < Joint->getSize()) {
+		Joint->setY(2 * Joint->getSize() - Joint->getY());
+		Joint->setAngle(M_PI - Joint->getAngle());
+		Joint->setSpeed(Joint->getSpeed() * Joint->getElasticity());
 	}
 }
 
 
-// Removes a particle from the environment.
-void Environment::removeParticle(Particle *particle) {
-	for (int i = 0; i < particles.size(); i++) {
-		if (particle == particles[i]) {
-			delete particles[i];
-			particles.erase(particles.begin() + i);
+// Removes a Joint from the environment.
+void Environment::removeJoint(Joint *Joint) {
+	for (int i = 0; i < Joints.size(); i++) {
+		if (Joint == Joints[i]) {
+			delete Joints[i];
+			Joints.erase(Joints.begin() + i);
 		}
 	}
 }
@@ -120,33 +120,33 @@ void Environment::removeSpring(Spring *spring) {
 }
 
 
-// Updates all particles and springs in the environment.
+// Updates all Joints and springs in the environment.
 void Environment::update() {
-	for (int i = 0; i < particles.size(); i++) {
-		Particle *particle = particles[i];
+	for (int i = 0; i < Joints.size(); i++) {
+		Joint *Joint = Joints[i];
 		if (allowAccelerate) {
-			particle->accelerate(acceleration);
+			Joint->accelerate(acceleration);
 		}
 		if (allowMove) {
-			particle->move();
+			Joint->move();
 		}
 		if (allowDrag) {
-			particle->experienceDrag();
+			Joint->experienceDrag();
 		}
 		if (allowBounce) {
-			bounce(particle);
+			bounce(Joint);
 		}
-		// Allows interaction with other particles.
-		for (int x = i + 1; x < particles.size(); x++) {
-			Particle *otherParticle = particles[x];
+		// Allows interaction with other Joints.
+		for (int x = i + 1; x < Joints.size(); x++) {
+			Joint *otherJohnt = Joints[x];
 			if (allowCollide) {
-				particle->collide(otherParticle);
+				Joint->checkCollide(otherJohnt);
 			}
 			if (allowAttract) {
-				particle->attract(otherParticle);
+				Joint->attract(otherJohnt);
 			}
 			if (allowCombine) {
-				particle->combine(otherParticle);
+				Joint->combine(otherJohnt);
 			}
 		}
 	}
