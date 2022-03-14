@@ -1,7 +1,6 @@
 #ifndef body_hpp
 #define body_hpp
-
-#define M_PI 3.14159265359
+#define _USE_MATH_DEFINES
 
 #include <cmath>
 #include <vector>
@@ -12,15 +11,18 @@ struct Vector2
 {
     float x, y;
 };
+Vector2 operator+(Vector2 const& v1, Vector2 const& v2);
 
 class Body{
 public:
-    Body(float x, float y, std::vector<Vector2> vertices, float speed, float rotation, bool ridgid);
+    Body(float x, float y, std::vector<Vector2> vertices, float speed, float rotation, float drag, float mass, bool ridgid);
     float getRotation() { return rotation; }
 	float getSpeed() { return speed; }
-    std::vector<Vector2> getVertices() { return vertices; }
 	float getX() { return x; }
 	float getY() { return y; }
+    std::vector<Vector2> getVertices() { return vertices; }
+    bool getRidgidity() { return ridgid; }
+    void accelerate(Vector2 vector);
 	void move();
 	void moveTo(float moveX, float moveY);
 	void setAngle(float r) { rotation = r; }
@@ -37,6 +39,7 @@ public:
 protected:
     bool ridgid;
     float mass;
+    float drag;
     float rotation;
     float speed; 
     std::vector<Vector2> vertices;

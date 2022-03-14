@@ -10,7 +10,7 @@
 // Handles the movement and forces acting upon the spring.
 class Spring {
 public:
-	Spring(Joint *p1, Joint *p2, float length=50, float strength=0.5);
+	Spring(Joint *p1, Joint *p2, float restlength=50, float strength=0.5);
 	Joint *getP1() { return p1; }
 	Joint *getP2() { return p2; }
 	void update();

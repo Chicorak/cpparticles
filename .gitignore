@@ -1,3 +1,13 @@
+
+demo/main.cpp
+demo/olcPixelGameEngine.h
+
+.vscode/
+
+*.bat
+
+.gitignore
+
 #vsCode
 *.code-workspace
 

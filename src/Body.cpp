@@ -1,8 +1,20 @@
 #include "../include/Body.hpp"
 
+Vector2 operator+(Vector2 const& v1, Vector2 const& v2) {
+	float x = sin(v1.x) * v1.y + sin(v2.x) * v2.y;
+	float y = cos(v1.x) * v1.y + cos(v2.x) * v2.y;
+	return Vector2{static_cast<float>(0.5 * M_PI - atan2(y, x)), (float)hypot(x, y)};
+}
 
-Body::Body(float x, float y, std::vector<Vector2> vertices, float speed, float rotation, bool ridgid):
-x(x), y(y), vertices(vertices), speed(speed), rotation(rotation), ridgid(ridgid){
+Body::Body(float x, float y, std::vector<Vector2> vertices, float speed, float rotation, float drag, float mass, bool ridgid):
+x(x), y(y), vertices(vertices), speed(speed), rotation(rotation), drag(drag), mass(mass), ridgid(ridgid){
+}
+
+
+void Body::accelerate(Vector2 vector) {
+	Vector2 velocity = Vector2{x, y} + vector;
+	x = velocity.x;
+	y = velocity.y;
 }
 
 void Body::move() {

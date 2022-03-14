@@ -3,19 +3,22 @@
 #include "../include/environment.hpp"
 
 
-// Environment constructor.
-Environment::Environment(int width, int height):
-width(width), height(height) {
+// Environment constructor - INT WIDTH, INT HEIGHT, VECTOR GRAVITY (Angle (Radians) - Speed)
+Environment::Environment(int width, int height, Vector GravVector):
+width(width), height(height), acceleration(GravVector){
 }
 
 
 // Environment destructor. Destroys all Joints and springs in the environment.
 Environment::~Environment() {
-	for (int i = 0; i < springs.size(); i++) {
-		delete springs[i];
+	for (int i = 0; i < Springs.size(); i++) {
+		delete Springs[i];
 	}
 	for (int i = 0; i < Joints.size(); i++) {
 		delete Joints[i];
+	}
+	for (int i = 0; i < Bodies.size(); i++) {
+		delete Bodies[i];
 	}
 }
 
@@ -51,6 +54,13 @@ Joint * Environment::addJoint(float x, float y, float size, float mass, float sp
 	return johnt;
 }
 
+// copied basically ^
+Body * Environment::addBody(float x, float y, std::vector<Vector2> Vertices, float speed, float rotation, float mass, bool ridgid) {
+	float drag = 0.07; //temp
+	Body *body = new Body(x, y, Vertices, speed, rotation, drag, mass, ridgid);
+	Bodies.push_back(body);
+	return body;
+}
 
 // Returns a pointer to the Joint from the environment at the coordinates (x, y), otherwise nullptr.
 Joint * Environment::getJoint(float x, float y){
@@ -62,11 +72,46 @@ Joint * Environment::getJoint(float x, float y){
 	return nullptr;
 }
 
+// https://www.eecs.umich.edu/courses/eecs380/HANDOUTS/PROJ2/InsidePoly.html
+Body * Environment::getBody(float x, float y){
+	int counter = 0;
+	int i;
+	int n;
+	double xinters;
+	Vector2 p1,p2;
+	std::vector<Vector2> verts;
+	for (int i = 0; i < Bodies.size(); i++) {
+		verts.clear();
+		verts = Bodies[i]->getVertices();
+		n = verts.size();
+		counter = 0; 
+		p1 = verts[0];
+		xinters = {};
+		for (i=1;i<=n;i++) {
+			p2 = verts[i % n];
+			if (y > fmin(p1.y,p2.y)) {
+			if (y <= fmax(p1.y,p2.y)) {
+				if (x <= fmax(p1.x,p2.x)) {
+				if (p1.y != p2.y) {
+					xinters = (y-p1.y)*(p2.x-p1.x)/(p2.y-p1.y)+p1.x;
+					if (p1.x == p2.x || x <= xinters)
+					counter++;
+					}
+				}
+			}
+		}
+		p1 = p2;
+		}
+		if (counter % 2 == 0)
+			return Bodies[i];
+	}
+	return nullptr;
+}
 
 // Adds a spring connecting two Joints in the environment and returns a pointer to the spring.
 Spring * Environment::addSpring(Joint *p1, Joint *p2, float length, float strength) {
 	Spring *spring = new Spring(p1, p2, length, strength);
-	springs.push_back(spring);
+	Springs.push_back(spring);
 	return spring;
 }
 
@@ -111,10 +156,10 @@ void Environment::removeJoint(Joint *Joint) {
 
 // Removes a spring from the environment.
 void Environment::removeSpring(Spring *spring) {
-	for (int i = 0; i < springs.size(); i++) {
-		if (spring == springs[i]) {
-			delete springs[i];
-			springs.erase(springs.begin() + i);
+	for (int i = 0; i < Springs.size(); i++) {
+		if (spring == Springs[i]) {
+			delete Springs[i];
+			Springs.erase(Springs.begin() + i);
 		}
 	}
 }
@@ -123,35 +168,46 @@ void Environment::removeSpring(Spring *spring) {
 // Updates all Joints and springs in the environment.
 void Environment::update() {
 	for (int i = 0; i < Joints.size(); i++) {
-		Joint *Joint = Joints[i];
+		Joint *joint = Joints[i];
 		if (allowAccelerate) {
-			Joint->accelerate(acceleration);
+			joint->accelerate(acceleration);
 		}
 		if (allowMove) {
-			Joint->move();
+			joint->move();
 		}
 		if (allowDrag) {
-			Joint->experienceDrag();
+			joint->experienceDrag();
 		}
 		if (allowBounce) {
-			bounce(Joint);
+			bounce(joint);
 		}
 		// Allows interaction with other Joints.
 		for (int x = i + 1; x < Joints.size(); x++) {
-			Joint *otherJohnt = Joints[x];
+			Joint *otherJoint = Joints[x];
 			if (allowCollide) {
-				Joint->checkCollide(otherJohnt);
+				joint->checkCollide(otherJoint);
 			}
 			if (allowAttract) {
-				Joint->attract(otherJohnt);
+				joint->attract(otherJoint);
 			}
 			if (allowCombine) {
-				Joint->combine(otherJohnt);
+				joint->combine(otherJoint);
 			}
 		}
 	}
-	for (int i = 0; i < springs.size(); i++) {
-		Spring *spring = springs[i];
+	for (int i = 0; i < Springs.size(); i++) {
+		Spring *spring = Springs[i];
 		spring->update();
+	}
+	for (int i = 0; i < Bodies.size(); i++) {
+		Body *body = Bodies[i];
+		if (body->getRidgidity()) {
+			body->move();
+			body->accelerate({acceleration.angle, acceleration.speed});
+		}
+		for (int x = i + 1; x < Joints.size(); x++) {
+			Body *otherBody = Bodies[x];
+			body->separating_axis_intersect(body->getVertices(), otherBody->getVertices());
+		}
 	}
 }
