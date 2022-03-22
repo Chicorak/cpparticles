@@ -8,6 +8,7 @@
 #include <random>
 #include <algorithm>
 #include "Joint.hpp"
+#include "Line.hpp"
 #include "Spring.hpp"
 #include "Body.hpp"
 
@@ -18,15 +19,25 @@ public:
 	~Environment();
 	int getHeight() { return height; }
 	int getWidth() { return width; }
+
 	Joint * addJoint();
 	Joint * addJoint(float x, float y, float size=10, float mass=100, float speed=0, float angle=0, float elasticity=0.9);
 	Joint * getJoint(float x, float y);
+
+	Line * addLine(float StartX, float StartY, float EndX, float EndY, float LineWidth);
+	Line * getLine(float x, float y);
+
 	Body * addBody(float x, float y, std::vector<Vector2> Vertices, float speed=0, float rotation=0, float mass=100, bool ridgid = false);
 	Body * getBody(float x, float y);
+
 	Spring * addSpring(Joint *p1, Joint *p2, float length=50, float strength=0.5);
-	std::vector<Joint* > getJoints() { return Joints; }
-	std::vector<Spring* > getSprings() { return Springs; }
-	std::vector<Body* > getBodies() { return Bodies; }
+
+
+	std::vector<Joint*>	getJoints() { return Joints; }
+	std::vector<Line *> getLines() 	{ return Lines;  }
+	std::vector<Spring*>getSprings(){ return Springs;}
+	std::vector<Body*>	getBodies()	{ return Bodies; }
+
 	void bounce(Joint *Joint);
 	void removeJoint(Joint *Joint);
 	void removeSpring(Spring *spring);
@@ -44,6 +55,7 @@ public:
 protected:
 	const int height;
 	const int width;
+	const float Stable = 0.12f;
 	bool allowAccelerate = true;
 	bool allowAttract = false;
 	bool allowBounce = true;
@@ -55,6 +67,7 @@ protected:
 	float elasticity = 0.75;
 	std::vector<Joint *> Joints;
 	std::vector<Spring *> Springs;
+	std::vector<Line *> Lines;
 	std::vector<Body *> Bodies;
 	Vector acceleration = {M_PI, 0.2};
 };
