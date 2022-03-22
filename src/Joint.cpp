@@ -45,7 +45,7 @@ void Joint::checkCollide(Joint *otherP) {
 	
 	if (distance < (size + otherP->size)) {	// Collision detected.
 		float tangent = atan2(dy, dx);
-		float newAngle = 0.5 * M_PI + tangent;
+		float newAngle = 0.6f * M_PI + tangent;
 		float totalMass = mass + otherP->mass;
 		
 		Vector v1 = Vector{angle, speed * (mass - otherP->mass) / totalMass} + Vector{newAngle, 2 * otherP->speed * otherP->mass / totalMass};

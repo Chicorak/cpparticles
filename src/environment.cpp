@@ -49,17 +49,9 @@ Joint * Environment::addJoint() {
 Joint * Environment::addJoint(float x, float y, float size, float mass, float speed, float angle, float elasticity) {
 	// Equation for drag [source]: http://www.petercollingridge.co.uk/tutorials/pygame-physics-simulation/mass/
 	float drag = pow((mass / (mass + airMass)), size);
-	Joint *johnt = new Joint(x, y, size, mass, speed, angle, elasticity, drag);
-	Joints.push_back(johnt);
-	return johnt;
-}
-
-// copied basically ^
-Body * Environment::addBody(float x, float y, std::vector<Vector2> Vertices, float speed, float rotation, float mass, bool ridgid) {
-	float drag = 0.07; //temp
-	Body *body = new Body(x, y, Vertices, speed, rotation, drag, mass, ridgid);
-	Bodies.push_back(body);
-	return body;
+	Joint *joint = new Joint(x, y, size, mass, speed, angle, elasticity, drag);
+	Joints.push_back(joint);
+	return joint;
 }
 
 // Returns a pointer to the Joint from the environment at the coordinates (x, y), otherwise nullptr.
@@ -71,6 +63,31 @@ Joint * Environment::getJoint(float x, float y){
 	}
 	return nullptr;
 }
+
+
+Line * Environment::addLine(float StartX, float StartY, float EndX, float EndY, float LineWidth){
+	Line *line = new Line(StartX, StartY, EndX, EndY, LineWidth);
+	Lines.push_back(line);
+	return line;
+}
+
+Line * Environment::getLine(float x, float y){
+	for (int i = 0; i < Lines.size(); i++) {
+		if (hypot(Lines[i]->getStartX() - x, Lines[i]->getStartY() - y) <= Lines[i]->getWidth() || hypot(Lines[i]->getEndX() - x, Lines[i]->getEndY() - y) <= Lines[i]->getWidth() ) {
+			return Lines[i];
+		}
+	}
+	return nullptr;
+}
+
+
+Body * Environment::addBody(float x, float y, std::vector<Vector2> Vertices, float speed, float rotation, float mass, bool ridgid) {
+	float drag = 0.07; //temp
+	Body *body = new Body(x, y, Vertices, speed, rotation, drag, mass, ridgid);
+	Bodies.push_back(body);
+	return body;
+}
+
 
 // https://www.eecs.umich.edu/courses/eecs380/HANDOUTS/PROJ2/InsidePoly.html
 Body * Environment::getBody(float x, float y){
@@ -181,6 +198,10 @@ void Environment::update() {
 		if (allowBounce) {
 			bounce(joint);
 		}
+		if (joint->getSpeed() < Stable){
+			joint->setSpeed(0);
+		}
+		
 		// Allows interaction with other Joints.
 		for (int x = i + 1; x < Joints.size(); x++) {
 			Joint *otherJoint = Joints[x];
@@ -193,6 +214,15 @@ void Environment::update() {
 			if (allowCombine) {
 				joint->combine(otherJoint);
 			}
+		}
+	}
+	for (int i = 0; i < Lines.size(); i++) {
+			Line *line = Lines[i];
+			for (int i = 0; i < Joints.size(); i++) {
+				Joint *joint = Joints[i];
+				if (allowCollide) {
+						line->checkCollide(joint);
+				}
 		}
 	}
 	for (int i = 0; i < Springs.size(); i++) {
