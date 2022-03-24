@@ -10,7 +10,7 @@
 #include "Joint.hpp"
 #include "Line.hpp"
 #include "Spring.hpp"
-#include "Body.hpp"
+#include "QuadTree.hpp"
 
 // Handles all interaction between Joints, springs and attributes within the environment.
 class Environment {
@@ -27,16 +27,13 @@ public:
 	Line * addLine(float StartX, float StartY, float EndX, float EndY, float LineWidth);
 	Line * getLine(float x, float y);
 
-	Body * addBody(float x, float y, std::vector<Vector2> Vertices, float speed=0, float rotation=0, float mass=100, bool ridgid = false);
-	Body * getBody(float x, float y);
-
 	Spring * addSpring(Joint *p1, Joint *p2, float length=50, float strength=0.5);
 
 
 	std::vector<Joint*>	getJoints() { return Joints; }
 	std::vector<Line *> getLines() 	{ return Lines;  }
 	std::vector<Spring*>getSprings(){ return Springs;}
-	std::vector<Body*>	getBodies()	{ return Bodies; }
+	
 
 	void bounce(Joint *Joint);
 	void removeJoint(Joint *Joint);
@@ -55,7 +52,7 @@ public:
 protected:
 	const int height;
 	const int width;
-	const float Stable = 0.12f;
+	const float Stable = 0.15f;
 	bool allowAccelerate = true;
 	bool allowAttract = false;
 	bool allowBounce = true;
@@ -68,7 +65,8 @@ protected:
 	std::vector<Joint *> Joints;
 	std::vector<Spring *> Springs;
 	std::vector<Line *> Lines;
-	std::vector<Body *> Bodies;
+	std::vector<Collidable*> Collidables;
+	QuadTree *quadTree;
 	Vector acceleration = {M_PI, 0.2};
 };
 

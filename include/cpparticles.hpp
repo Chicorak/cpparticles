@@ -3,7 +3,7 @@
 #define CPParticles_hpp
 
 #include "environment.hpp"
-#include "Body.hpp"
+#include "Line.hpp"
 #include "Joint.hpp"
 #include "Spring.hpp"
 
