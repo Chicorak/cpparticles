@@ -2,6 +2,8 @@
 A basic 2D physics library-ish written in C++ with included SFML demo programs. Made for practice and funsies with some guidance from 
 [this Python tutorial](http://www.petercollingridge.co.uk/tutorials/pygame-physics-simulation/).
 
+Also the Line and QuadTree guidance and learning [from this](https://github.com/OneLoneCoder/olcPixelGameEngine/blob/master/Videos/OneLoneCoder_PGE_Balls2.cpp).
+
 ## Installation
 To use CPParticles in your project, include the `include` and `src` folders in your project directory. The `cpparticles.hpp` header file includes all the header files in the library:
 ```cpp
