@@ -6,6 +6,7 @@
 // Environment constructor - INT WIDTH, INT HEIGHT, VECTOR GRAVITY (Angle (Radians) - Speed)
 Environment::Environment(int width, int height, Vector GravVector):
 width(width), height(height), acceleration(GravVector){
+	quadTree = new QuadTree({ 0, 0, (double)width, (double)height}, 8, 4);
 }
 
 
@@ -17,8 +18,8 @@ Environment::~Environment() {
 	for (int i = 0; i < Joints.size(); i++) {
 		delete Joints[i];
 	}
-	for (int i = 0; i < Bodies.size(); i++) {
-		delete Bodies[i];
+	for (int i = 0; i < Lines.size(); i++) {
+		delete Lines[i];
 	}
 }
 
@@ -50,6 +51,9 @@ Joint * Environment::addJoint(float x, float y, float size, float mass, float sp
 	// Equation for drag [source]: http://www.petercollingridge.co.uk/tutorials/pygame-physics-simulation/mass/
 	float drag = pow((mass / (mass + airMass)), size);
 	Joint *joint = new Joint(x, y, size, mass, speed, angle, elasticity, drag);
+	Collidable *obj = new Collidable({{x-(size*2), y-(size*2), size*4, size*4}, size});
+	quadTree->insert(obj);
+	Collidables.push_back(obj);
 	Joints.push_back(joint);
 	return joint;
 }
@@ -80,50 +84,6 @@ Line * Environment::getLine(float x, float y){
 	return nullptr;
 }
 
-
-Body * Environment::addBody(float x, float y, std::vector<Vector2> Vertices, float speed, float rotation, float mass, bool ridgid) {
-	float drag = 0.07; //temp
-	Body *body = new Body(x, y, Vertices, speed, rotation, drag, mass, ridgid);
-	Bodies.push_back(body);
-	return body;
-}
-
-
-// https://www.eecs.umich.edu/courses/eecs380/HANDOUTS/PROJ2/InsidePoly.html
-Body * Environment::getBody(float x, float y){
-	int counter = 0;
-	int i;
-	int n;
-	double xinters;
-	Vector2 p1,p2;
-	std::vector<Vector2> verts;
-	for (int i = 0; i < Bodies.size(); i++) {
-		verts.clear();
-		verts = Bodies[i]->getVertices();
-		n = verts.size();
-		counter = 0; 
-		p1 = verts[0];
-		xinters = {};
-		for (i=1;i<=n;i++) {
-			p2 = verts[i % n];
-			if (y > fmin(p1.y,p2.y)) {
-			if (y <= fmax(p1.y,p2.y)) {
-				if (x <= fmax(p1.x,p2.x)) {
-				if (p1.y != p2.y) {
-					xinters = (y-p1.y)*(p2.x-p1.x)/(p2.y-p1.y)+p1.x;
-					if (p1.x == p2.x || x <= xinters)
-					counter++;
-					}
-				}
-			}
-		}
-		p1 = p2;
-		}
-		if (counter % 2 == 0)
-			return Bodies[i];
-	}
-	return nullptr;
-}
 
 // Adds a spring connecting two Joints in the environment and returns a pointer to the spring.
 Spring * Environment::addSpring(Joint *p1, Joint *p2, float length, float strength) {
@@ -184,35 +144,42 @@ void Environment::removeSpring(Spring *spring) {
 
 // Updates all Joints and springs in the environment.
 void Environment::update() {
+	for (int i = 0; i < Collidables.size(); i++){
+		Collidable *c = Collidables[i];
+		c->bound.x = Joints.at(i)->getX();
+		c->bound.y = Joints.at(i)->getY();
+		quadTree->update(c);
+	}
 	for (int i = 0; i < Joints.size(); i++) {
-		Joint *joint = Joints[i];
+		Joint *j = Joints[i];
 		if (allowAccelerate) {
-			joint->accelerate(acceleration);
+			j->accelerate(acceleration);
 		}
 		if (allowMove) {
-			joint->move();
+			j->move();
 		}
 		if (allowDrag) {
-			joint->experienceDrag();
+			j->experienceDrag();
 		}
 		if (allowBounce) {
-			bounce(joint);
+			bounce(j);
 		}
-		if (joint->getSpeed() < Stable){
-			joint->setSpeed(0);
+		if (fabs(j->getSpeed()) < Stable){
+			j->setSpeed(0);
+			j->setAngle(0);
 		}
-		
 		// Allows interaction with other Joints.
-		for (int x = i + 1; x < Joints.size(); x++) {
+		for (int x = i+1; x < Joints.size(); x++) {
 			Joint *otherJoint = Joints[x];
+			if(Collidables.at(i)->bound.intersects(Collidables.at(x)->bound))
 			if (allowCollide) {
-				joint->checkCollide(otherJoint);
+				j->checkCollide(otherJoint);
 			}
 			if (allowAttract) {
-				joint->attract(otherJoint);
+				j->attract(otherJoint);
 			}
 			if (allowCombine) {
-				joint->combine(otherJoint);
+				j->combine(otherJoint);
 			}
 		}
 	}
@@ -229,15 +196,6 @@ void Environment::update() {
 		Spring *spring = Springs[i];
 		spring->update();
 	}
-	for (int i = 0; i < Bodies.size(); i++) {
-		Body *body = Bodies[i];
-		if (body->getRidgidity()) {
-			body->move();
-			body->accelerate({acceleration.angle, acceleration.speed});
-		}
-		for (int x = i + 1; x < Joints.size(); x++) {
-			Body *otherBody = Bodies[x];
-			body->separating_axis_intersect(body->getVertices(), otherBody->getVertices());
-		}
-	}
+	
+
 }

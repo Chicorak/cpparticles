@@ -42,12 +42,12 @@ void Joint::checkCollide(Joint *otherP) {
 	float dx = x - otherP->x;
 	float dy = y - otherP->y;
 	float distance = hypot(dx, dy);
-	
+	if (x+size+otherP->getSize() > otherP->getX()&&x<otherP->getX()+size+otherP->getSize()&&y+size+otherP->getSize()>otherP->getY()&&y<otherP->getY()+size+otherP->getSize())
 	if (distance < (size + otherP->size)) {	// Collision detected.
 		float tangent = atan2(dy, dx);
-		float newAngle = 0.6f * M_PI + tangent;
+		float newAngle = 0.5f * M_PI + tangent;
 		float totalMass = mass + otherP->mass;
-		
+			
 		Vector v1 = Vector{angle, speed * (mass - otherP->mass) / totalMass} + Vector{newAngle, 2 * otherP->speed * otherP->mass / totalMass};
 		Vector v2 = Vector{otherP->angle, otherP->speed * (otherP->mass - mass) / totalMass} + Vector{static_cast<float>(newAngle+M_PI), 2 * speed * mass / totalMass};
 		
@@ -60,7 +60,7 @@ void Joint::checkCollide(Joint *otherP) {
 		speed *= newElasticity;
 		otherP->speed *= newElasticity;
 		
-		float overlap = 0.5 * (size + otherP->size - distance + 1);
+		float overlap = 0.5f * (size + otherP->size - distance + 0.1f);
 		x += sin(newAngle) * overlap;
 		y -= cos(newAngle) * overlap;
 		otherP->x -= sin(newAngle) * overlap;
